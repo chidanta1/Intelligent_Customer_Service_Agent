@@ -1,0 +1,356 @@
+{
+  "dataset_name": "intelligent_customer_service_agent_experiment3",
+  "version": "1.0.0",
+  "status": "frozen",
+  "created_at": "2026-09-22",
+  "purpose": "验证项目内容3的全链路工具选择、整体问答准确率和端到端响应时间",
+  "distribution": {
+    "structured_predefined": 8,
+    "structured_dynamic": 12,
+    "graphrag": 15,
+    "mixed": 10,
+    "comprehensive": 5,
+    "total": 50
+  },
+  "cases": [
+    {
+      "case_id": "P001", "category": "structured_predefined",
+      "question": "请给我华为 智能门铃 Plus的售价、现有库存和所属类别。",
+      "expected_tools": ["predefined_cypher"], "expected_predefined_query": "product_by_name",
+      "reference": {"cypher": "MATCH (p:Product) WHERE p.ProductName CONTAINS '华为 智能门铃 Plus' RETURN p.ProductName AS product, p.UnitPrice AS price, p.UnitsInStock AS stock, p.CategoryName AS category", "min_rows": 1},
+      "answer_facts": [{"id":"product","origin":"neo4j","any_of":["华为 智能门铃 Plus"]},{"id":"price","origin":"neo4j","any_of":["9128.31"]},{"id":"stock","origin":"neo4j","any_of":["779"]},{"id":"category","origin":"neo4j","any_of":["智能门铃"]}]
+    },
+    {
+      "case_id": "P002", "category": "structured_predefined",
+      "question": "订单1是什么时候下单、要求何时送达、实际何时发出，客户是谁？",
+      "expected_tools": ["predefined_cypher"], "expected_predefined_query": "order_by_id",
+      "reference": {"cypher": "MATCH (o:Order) WHERE o.orderId = '1' RETURN o.OrderDate AS orderDate, o.RequiredDate AS requiredDate, o.ShippedDate AS shippedDate, o.CustomerName AS customer", "min_rows": 1},
+      "answer_facts": [{"id":"order_date","origin":"neo4j","any_of":["2024-04-06"]},{"id":"required","origin":"neo4j","any_of":["2024-04-09"]},{"id":"shipped","origin":"neo4j","any_of":["2024-04-11"]},{"id":"customer","origin":"neo4j","any_of":["思优信息有限公司信息技术"]}]
+    },
+    {
+      "case_id": "P003", "category": "structured_predefined",
+      "question": "查一下订单1买了哪些商品，并给出每项数量和成交单价。",
+      "expected_tools": ["predefined_cypher"], "expected_predefined_query": "order_details",
+      "reference": {"cypher": "MATCH (o:Order)-[r:CONTAINS]->(p:Product) WHERE o.orderId = '1' RETURN p.ProductName AS product, r.Quantity AS quantity, r.UnitPrice AS price ORDER BY product", "min_rows": 2},
+      "answer_facts": [{"id":"item1","origin":"neo4j","any_of":["索尼 智能马桶 Elite"]},{"id":"qty1","origin":"neo4j","any_of":["11"]},{"id":"item2","origin":"neo4j","any_of":["苹果 智能电视 Max"]},{"id":"qty2","origin":"neo4j","any_of":["16"]}]
+    },
+    {
+      "case_id": "P004", "category": "structured_predefined",
+      "question": "思优信息有限公司信息技术名下有哪些订单？请列订单号和日期。",
+      "expected_tools": ["predefined_cypher"], "expected_predefined_query": "customer_orders",
+      "reference": {"cypher": "MATCH (c:Customer)-[:PLACED]->(o:Order) WHERE c.CompanyName = '思优信息有限公司信息技术' RETURN o.orderId AS id, o.OrderDate AS date ORDER BY id", "min_rows": 3},
+      "answer_facts": [{"id":"order1","origin":"neo4j","any_of":["订单1","1"]},{"id":"order64","origin":"neo4j","any_of":["64"]},{"id":"order83","origin":"neo4j","any_of":["83"]}]
+    },
+    {
+      "case_id": "P005", "category": "structured_predefined",
+      "question": "华为智能生活供应了哪些商品？同时告诉我单价和库存。",
+      "expected_tools": ["predefined_cypher"], "expected_predefined_query": "supplier_products",
+      "reference": {"cypher": "MATCH (s:Supplier)<-[:SUPPLIED_BY]-(p:Product) WHERE s.CompanyName = '华为智能生活' RETURN p.ProductName AS product, p.UnitPrice AS price, p.UnitsInStock AS stock ORDER BY product", "min_rows": 2},
+      "answer_facts": [{"id":"switch","origin":"neo4j","any_of":["华为 智能开关 Mini"]},{"id":"doorbell","origin":"neo4j","any_of":["华为 智能门铃 Plus"]},{"id":"doorbell_stock","origin":"neo4j","any_of":["779"]}]
+    },
+    {
+      "case_id": "P006", "category": "structured_predefined",
+      "question": "员工凤英 孙担任什么职位，哪天入职？",
+      "expected_tools": ["predefined_cypher"], "expected_predefined_query": "employee_by_name",
+      "reference": {"cypher": "MATCH (e:Employee) WHERE e.FirstName + ' ' + e.LastName CONTAINS '凤英 孙' RETURN e.FirstName AS firstName, e.LastName AS lastName, e.Title AS title, e.HireDate AS hireDate", "min_rows": 1},
+      "answer_facts": [{"id":"name","origin":"neo4j","any_of":["凤英","孙"]},{"id":"title","origin":"neo4j","any_of":["市场总监"]},{"id":"hire","origin":"neo4j","any_of":["2016-01-29"]}]
+    },
+    {
+      "case_id": "P007", "category": "structured_predefined",
+      "question": "把当前商品类别及每类的商品数量列出来。",
+      "expected_tools": ["predefined_cypher"], "expected_predefined_query": "category_product_count",
+      "reference": {"cypher": "MATCH (c:Category)<-[:BELONGS_TO]-(p:Product) RETURN c.CategoryName AS category, count(p) AS productCount ORDER BY productCount DESC, category", "min_rows": 8},
+      "answer_facts": [{"id":"switches","origin":"neo4j","any_of":["智能开关"]},{"id":"doorbells","origin":"neo4j","any_of":["智能门铃"]},{"id":"count","origin":"neo4j","any_of":["2"]}]
+    },
+    {
+      "case_id": "P008", "category": "structured_predefined",
+      "question": "按评价数量看，哪些智能家居商品最热门？给出评价数和平均分。",
+      "expected_tools": ["predefined_cypher"], "expected_predefined_query": "products_popular",
+      "reference": {"cypher": "MATCH (p:Product)<-[:ABOUT]-(r:Review) WHERE p.ProductName IS NOT NULL RETURN p.ProductName AS product, count(r) AS reviewCount, round(avg(toFloat(r.Rating)), 2) AS avgRating ORDER BY reviewCount DESC LIMIT 3", "min_rows": 3},
+      "answer_facts": [{"id":"top","origin":"neo4j","any_of":["格力 智能空调 Standard"]},{"id":"top_count","origin":"neo4j","any_of":["7"]},{"id":"second","origin":"neo4j","any_of":["博世 智能冰箱 Lite"]}]
+    },
+
+    {
+      "case_id": "D001", "category": "structured_dynamic",
+      "question": "商品目录里的小米智能门铃现在多少钱，还剩多少台？",
+      "expected_tools": ["cypher_query"],
+      "reference": {"cypher": "MATCH (p:CatalogProduct {name:'小米智能门铃'}) RETURN p.name AS name, p.price AS price, p.stock AS stock", "min_rows": 1},
+      "answer_facts": [{"id":"name","origin":"neo4j","any_of":["小米智能门铃"]},{"id":"price","origin":"neo4j","any_of":["299"]},{"id":"stock","origin":"neo4j","any_of":["50"]}]
+    },
+    {
+      "case_id": "D002", "category": "structured_dynamic",
+      "question": "目录中一共有几款智能音箱？",
+      "expected_tools": ["cypher_query"],
+      "reference": {"cypher": "MATCH (p:CatalogProduct) WHERE p.category = '智能音箱' RETURN count(p) AS productCount", "min_rows": 1},
+      "answer_facts": [{"id":"count","origin":"neo4j","any_of":["4款","4 款","共4","共 4"]}]
+    },
+    {
+      "case_id": "D003", "category": "structured_dynamic",
+      "question": "目录里价格最低的智能门锁是哪款，售价多少？",
+      "expected_tools": ["cypher_query"],
+      "reference": {"cypher": "MATCH (p:CatalogProduct) WHERE p.category = '智能门锁' RETURN p.name AS name, p.price AS price ORDER BY p.price ASC LIMIT 1", "min_rows": 1},
+      "answer_facts": [{"id":"name","origin":"neo4j","any_of":["小米智能门锁"]},{"id":"price","origin":"neo4j","any_of":["1299"]}]
+    },
+    {
+      "case_id": "D004", "category": "structured_dynamic",
+      "question": "目录里售价低于200元的商品共有几款？请把名称也列出。",
+      "expected_tools": ["cypher_query"],
+      "reference": {"cypher": "MATCH (p:CatalogProduct) WHERE p.price < 200 WITH p ORDER BY p.price, p.name WITH collect({name:p.name, price:p.price}) AS products RETURN size(products) AS productCount, products", "min_rows": 1},
+      "answer_facts": [{"id":"count","origin":"neo4j","any_of":["5款","5 款","共5","共 5"]},{"id":"bulb","origin":"neo4j","any_of":["飞利浦智能灯泡"]},{"id":"doorbell","origin":"neo4j","any_of":["叮零智能门铃"]}]
+    },
+    {
+      "case_id": "D005", "category": "structured_dynamic",
+      "question": "找出目录中200到500元（含边界）的商品，并按价格升序排列。",
+      "expected_tools": ["cypher_query"],
+      "reference": {"cypher": "MATCH (p:CatalogProduct) WHERE p.price >= 200 AND p.price <= 500 RETURN p.name AS name, p.price AS price ORDER BY p.price, p.name", "min_rows": 5},
+      "answer_facts": [{"id":"xiaomi_bell","origin":"neo4j","any_of":["小米智能门铃"]},{"id":"speaker","origin":"neo4j","any_of":["小爱音箱Pro"]},{"id":"ezviz","origin":"neo4j","any_of":["萤石智能门铃"]}]
+    },
+    {
+      "case_id": "D006", "category": "structured_dynamic",
+      "question": "目录中智能门铃的平均售价是多少？",
+      "expected_tools": ["cypher_query"],
+      "reference": {"cypher": "MATCH (p:CatalogProduct) WHERE p.category = '智能门铃' RETURN round(avg(p.price), 2) AS averagePrice", "min_rows": 1},
+      "answer_facts": [{"id":"average","origin":"neo4j","any_of":["261.5","261.50"]}]
+    },
+    {
+      "case_id": "D007", "category": "structured_dynamic",
+      "question": "把目录里所有智能音箱的库存合计一下。",
+      "expected_tools": ["cypher_query"],
+      "reference": {"cypher": "MATCH (p:CatalogProduct) WHERE p.category = '智能音箱' RETURN sum(p.stock) AS totalStock", "min_rows": 1},
+      "answer_facts": [{"id":"total","origin":"neo4j","any_of":["510"]}]
+    },
+    {
+      "case_id": "D008", "category": "structured_dynamic",
+      "question": "小米智能门铃和360智能门铃谁的库存更多？分别还有多少？",
+      "expected_tools": ["cypher_query"],
+      "reference": {"cypher": "MATCH (p:CatalogProduct) WHERE p.name IN ['小米智能门铃','360智能门铃'] RETURN p.name AS name, p.stock AS stock ORDER BY p.stock DESC", "min_rows": 2},
+      "answer_facts": [{"id":"winner","origin":"neo4j","any_of":["360智能门铃"]},{"id":"stock360","origin":"neo4j","any_of":["80"]},{"id":"stockxiaomi","origin":"neo4j","any_of":["50"]}]
+    },
+    {
+      "case_id": "D009", "category": "structured_dynamic",
+      "question": "目录中哪个品牌至少有三款商品？给出品牌和数量。",
+      "expected_tools": ["cypher_query"],
+      "reference": {"cypher": "MATCH (p:CatalogProduct) WITH p.brand AS brand, count(p) AS productCount WHERE productCount >= 3 RETURN brand, productCount ORDER BY productCount DESC", "min_rows": 1},
+      "answer_facts": [{"id":"brand","origin":"neo4j","any_of":["小米"]},{"id":"count","origin":"neo4j","any_of":["3"]}]
+    },
+    {
+      "case_id": "D010", "category": "structured_dynamic",
+      "question": "目录中售价最高的商品是哪一款，价格多少？",
+      "expected_tools": ["cypher_query"],
+      "reference": {"cypher": "MATCH (p:CatalogProduct) RETURN p.name AS name, p.price AS price ORDER BY p.price DESC LIMIT 1", "min_rows": 1},
+      "answer_facts": [{"id":"name","origin":"neo4j","any_of":["格力智能空调"]},{"id":"price","origin":"neo4j","any_of":["3299"]}]
+    },
+    {
+      "case_id": "D011", "category": "structured_dynamic",
+      "question": "当前商品目录总共有多少个商品条目？",
+      "expected_tools": ["cypher_query"],
+      "reference": {"cypher": "MATCH (p:CatalogProduct) RETURN count(p) AS productCount", "min_rows": 1},
+      "answer_facts": [{"id":"count","origin":"neo4j","any_of":["16"]}]
+    },
+    {
+      "case_id": "D012", "category": "structured_dynamic",
+      "question": "按目录售价乘库存计算，全部目录商品的库存货值合计多少元？",
+      "expected_tools": ["cypher_query"],
+      "reference": {"cypher": "MATCH (p:CatalogProduct) RETURN round(sum(p.price * p.stock), 2) AS inventoryValue", "min_rows": 1},
+      "answer_facts": [{"id":"value","origin":"neo4j","any_of":["764465","764,465"]}]
+    },
+
+    {
+      "case_id": "G001", "category": "graphrag",
+      "question": "智能门铃的质保期限多长？哪些损坏不保？",
+      "expected_tools": ["microsoft_graphrag_query"], "reference": {"source_files":["faq_service.txt"]},
+      "answer_facts": [{"id":"duration","origin":"source","any_of":["1年质保"]},{"id":"exclusions","origin":"source","any_of":["人为损坏","私自拆解","进水"]}]
+    },
+    {
+      "case_id": "G002", "category": "graphrag",
+      "question": "音箱摔坏或进水后还能免费保修吗？正常质保多久？",
+      "expected_tools": ["microsoft_graphrag_query"], "reference": {"source_files":["faq_service.txt"]},
+      "answer_facts": [{"id":"duration","origin":"source","any_of":["1年质保"]},{"id":"water","origin":"source","any_of":["进水"]},{"id":"drop","origin":"source","any_of":["摔落"]},{"id":"excluded","origin":"source","any_of":["不在保修范围"]}]
+    },
+    {
+      "case_id": "G003", "category": "graphrag",
+      "question": "智能门锁整机与锁芯分别享受怎样的质保？",
+      "expected_tools": ["microsoft_graphrag_query"], "reference": {"source_files":["faq_service.txt"]},
+      "answer_facts": [{"id":"lock","origin":"source","any_of":["2年质保"]},{"id":"core","origin":"source","any_of":["锁芯终身质保"]}]
+    },
+    {
+      "case_id": "G004", "category": "graphrag",
+      "question": "新买的智能音箱该怎么配网？对WiFi频段有什么限制？",
+      "expected_tools": ["microsoft_graphrag_query"], "reference": {"source_files":["faq_service.txt"]},
+      "answer_facts": [{"id":"app","origin":"source","any_of":["下载对应品牌的APP"]},{"id":"add","origin":"source","any_of":["添加设备"]},{"id":"band","origin":"source","any_of":["2.4G WiFi"]},{"id":"no5g","origin":"source","any_of":["不支持5G WiFi"]}]
+    },
+    {
+      "case_id": "G005", "category": "graphrag",
+      "question": "门锁电池彻底耗尽，人在门外有哪些开锁办法？",
+      "expected_tools": ["microsoft_graphrag_query"], "reference": {"source_files":["faq_service.txt"]},
+      "answer_facts": [{"id":"power","origin":"source","any_of":["Type-C接口"]},{"id":"key","origin":"source","any_of":["机械钥匙"]},{"id":"locksmith","origin":"source","any_of":["开锁师傅"]}]
+    },
+    {
+      "case_id": "G006", "category": "graphrag",
+      "question": "门锁电量降到什么程度就建议换电池？",
+      "expected_tools": ["microsoft_graphrag_query"], "reference": {"source_files":["faq_service.txt"]},
+      "answer_facts": [{"id":"threshold","origin":"source","any_of":["低于20%"]}]
+    },
+    {
+      "case_id": "G007", "category": "graphrag",
+      "question": "七天无理由退货要求商品保持什么状态？",
+      "expected_tools": ["microsoft_graphrag_query"], "reference": {"source_files":["faq_service.txt"]},
+      "answer_facts": [{"id":"days","origin":"source","any_of":["7天无理由"]},{"id":"unused","origin":"source","any_of":["商品未使用"]},{"id":"package","origin":"source","any_of":["包装完整"]},{"id":"accessories","origin":"source","any_of":["配件齐全"]},{"id":"resale","origin":"source","any_of":["不影响二次销售"]}]
+    },
+    {
+      "case_id": "G008", "category": "graphrag",
+      "question": "退货寄到后，商家多久完成检查，退款怎么返还？",
+      "expected_tools": ["microsoft_graphrag_query"], "reference": {"source_files":["faq_service.txt"]},
+      "answer_facts": [{"id":"inspection","origin":"source","any_of":["3个工作日内"]},{"id":"refund","origin":"source","any_of":["退款原路返回"]}]
+    },
+    {
+      "case_id": "G009", "category": "graphrag",
+      "question": "退货产生的运费由谁承担？质量问题和非质量问题分别说。",
+      "expected_tools": ["microsoft_graphrag_query"], "reference": {"source_files":["faq_service.txt"]},
+      "answer_facts": [{"id":"buyer","origin":"source","any_of":["非质量问题退货运费由买家承担"]},{"id":"seller","origin":"source","any_of":["质量问题由我们承担"]}]
+    },
+    {
+      "case_id": "G010", "category": "graphrag",
+      "question": "店里的智能设备能接入哪些主流语音助手？",
+      "expected_tools": ["microsoft_graphrag_query"], "reference": {"source_files":["faq_service.txt"]},
+      "answer_facts": [{"id":"xiaomi","origin":"source","any_of":["小爱同学"]},{"id":"tmall","origin":"source","any_of":["天猫精灵"]},{"id":"siri","origin":"source","any_of":["Siri"]},{"id":"google","origin":"source","any_of":["Google Assistant"]}]
+    },
+    {
+      "case_id": "G011", "category": "graphrag",
+      "question": "为了减少误报并保存关键画面，智能门铃日常使用有什么建议？",
+      "expected_tools": ["microsoft_graphrag_query"], "reference": {"source_files":["faq_service.txt"]},
+      "answer_facts": [{"id":"sensitivity","origin":"source","any_of":["调整侦测灵敏度"]},{"id":"storage","origin":"source","any_of":["云存储服务"]},{"id":"area","origin":"source","any_of":["设置侦测区域"]}]
+    },
+    {
+      "case_id": "G012", "category": "graphrag",
+      "question": "智能音箱怎样摆放和维护更利于识别与长期使用？",
+      "expected_tools": ["microsoft_graphrag_query"], "reference": {"source_files":["faq_service.txt"]},
+      "answer_facts": [{"id":"open","origin":"source","any_of":["放置在开阔位置"]},{"id":"dry","origin":"source","any_of":["避免阳光直射和潮湿环境"]},{"id":"firmware","origin":"source","any_of":["定期更新固件"]}]
+    },
+    {
+      "case_id": "G013", "category": "graphrag",
+      "question": "你们客服在线时间、咨询响应和售后解决时限分别是什么？",
+      "expected_tools": ["microsoft_graphrag_query"], "reference": {"source_files":["faq_service.txt"]},
+      "answer_facts": [{"id":"online","origin":"source","any_of":["7x24小时客服在线"]},{"id":"response","origin":"source","any_of":["1小时内响应"]},{"id":"resolve","origin":"source","any_of":["48小时内解决"]}]
+    },
+    {
+      "case_id": "G014", "category": "graphrag",
+      "question": "用户普遍觉得智能门铃好在哪里，又希望改进哪些地方？",
+      "expected_tools": ["microsoft_graphrag_query"], "reference": {"source_files":["user_experience.txt","user_reviews.txt"]},
+      "answer_facts": [{"id":"video","origin":"source","any_of":["视频画质清晰"]},{"id":"install","origin":"source","any_of":["安装简单"]},{"id":"wifi","origin":"source","any_of":["WiFi连接稳定性"]},{"id":"storage","origin":"source","any_of":["云存储功能"]}]
+    },
+    {
+      "case_id": "G015", "category": "graphrag",
+      "question": "智能音箱的整体使用亮点和常见改进诉求有哪些？",
+      "expected_tools": ["microsoft_graphrag_query"], "reference": {"source_files":["user_experience.txt","user_reviews.txt"]},
+      "answer_facts": [{"id":"sound","origin":"source","any_of":["音质表现优秀"]},{"id":"recognition","origin":"source","any_of":["语音识别准确"]},{"id":"complex","origin":"source","any_of":["复杂指令的理解能力"]},{"id":"ads","origin":"source","any_of":["减少广告推送"]}]
+    },
+
+    {
+      "case_id": "M001", "category": "mixed",
+      "question": "小米智能门铃现在多少钱、库存多少？用户反馈里最突出的优点和问题又是什么？",
+      "expected_tools": ["cypher_query","microsoft_graphrag_query"],
+      "reference": {"cypher":"MATCH (p:CatalogProduct {name:'小米智能门铃'}) RETURN p.price AS price,p.stock AS stock","source_files":["user_reviews.txt"]},
+      "answer_facts": [{"id":"price","origin":"neo4j","any_of":["299"]},{"id":"stock","origin":"neo4j","any_of":["50"]},{"id":"quality","origin":"source","any_of":["画质非常清晰"]},{"id":"wifi","origin":"source","any_of":["WiFi连接不太稳定"]}]
+    },
+    {
+      "case_id": "M002", "category": "mixed",
+      "question": "小爱音箱Pro的价格和库存是多少？评价中有哪些优点与不足？",
+      "expected_tools": ["cypher_query","microsoft_graphrag_query"],
+      "reference": {"cypher":"MATCH (p:CatalogProduct {name:'小爱音箱Pro'}) RETURN p.price AS price,p.stock AS stock","source_files":["user_reviews.txt"]},
+      "answer_facts": [{"id":"price","origin":"neo4j","any_of":["399"]},{"id":"stock","origin":"neo4j","any_of":["120"]},{"id":"sound","origin":"source","any_of":["音质非常出色"]},{"id":"complex","origin":"source","any_of":["复杂的指令有时候理解不了"]}]
+    },
+    {
+      "case_id": "M003", "category": "mixed",
+      "question": "小米智能门锁卖多少钱、还有多少库存？它的整机和锁芯保修多久？",
+      "expected_tools": ["cypher_query","microsoft_graphrag_query"],
+      "reference": {"cypher":"MATCH (p:CatalogProduct {name:'小米智能门锁'}) RETURN p.price AS price,p.stock AS stock","source_files":["faq_service.txt"]},
+      "answer_facts": [{"id":"price","origin":"neo4j","any_of":["1299"]},{"id":"stock","origin":"neo4j","any_of":["60"]},{"id":"warranty","origin":"source","any_of":["2年质保"]},{"id":"core","origin":"source","any_of":["锁芯终身质保"]}]
+    },
+    {
+      "case_id": "M004", "category": "mixed",
+      "question": "360智能门铃的目录售价、库存和用户评价重点分别是什么？",
+      "expected_tools": ["cypher_query","microsoft_graphrag_query"],
+      "reference": {"cypher":"MATCH (p:CatalogProduct {name:'360智能门铃'}) RETURN p.price AS price,p.stock AS stock","source_files":["user_reviews.txt"]},
+      "answer_facts": [{"id":"price","origin":"neo4j","any_of":["199"]},{"id":"stock","origin":"neo4j","any_of":["80"]},{"id":"face","origin":"source","any_of":["AI人脸识别功能"]},{"id":"battery","origin":"source","any_of":["差不多半年"]}]
+    },
+    {
+      "case_id": "M005", "category": "mixed",
+      "question": "华为Sound X当前价格和库存怎样？用户如何评价它的音质与缺点？",
+      "expected_tools": ["cypher_query","microsoft_graphrag_query"],
+      "reference": {"cypher":"MATCH (p:CatalogProduct {name:'华为Sound X'}) RETURN p.price AS price,p.stock AS stock","source_files":["user_reviews.txt"]},
+      "answer_facts": [{"id":"price","origin":"neo4j","any_of":["1999"]},{"id":"stock","origin":"neo4j","any_of":["40"]},{"id":"hifi","origin":"source","any_of":["HiFi音箱"]},{"id":"expensive","origin":"source","any_of":["价格比较贵"]}]
+    },
+    {
+      "case_id": "M006", "category": "mixed",
+      "question": "飞利浦智能灯泡多少钱、库存多少？评论提到哪些主要卖点？",
+      "expected_tools": ["cypher_query","microsoft_graphrag_query"],
+      "reference": {"cypher":"MATCH (p:CatalogProduct {name:'飞利浦智能灯泡'}) RETURN p.price AS price,p.stock AS stock","source_files":["user_reviews.txt"]},
+      "answer_facts": [{"id":"price","origin":"neo4j","any_of":["99"]},{"id":"stock","origin":"neo4j","any_of":["300"]},{"id":"colors","origin":"source","any_of":["1600万种颜色"]},{"id":"timer","origin":"source","any_of":["定时开关灯"]}]
+    },
+    {
+      "case_id": "M007", "category": "mixed",
+      "question": "目录中500元以内的智能音箱有哪些？买回去配网时要注意什么WiFi条件？",
+      "expected_tools": ["cypher_query","microsoft_graphrag_query"],
+      "reference": {"cypher":"MATCH (p:CatalogProduct) WHERE p.category='智能音箱' AND p.price <= 500 RETURN p.name AS name,p.price AS price ORDER BY p.price","source_files":["faq_service.txt"]},
+      "answer_facts": [{"id":"names","origin":"neo4j","any_of":["小度智能音箱"]},{"id":"xiaomi","origin":"neo4j","any_of":["小爱音箱Pro"]},{"id":"band","origin":"source","any_of":["2.4G WiFi"]},{"id":"no5g","origin":"source","any_of":["不支持5G WiFi"]}]
+    },
+    {
+      "case_id": "M008", "category": "mixed",
+      "question": "比较小米智能门铃和360智能门铃的价格；再说明门铃的一般质保期及除外情形。",
+      "expected_tools": ["cypher_query","microsoft_graphrag_query"],
+      "reference": {"cypher":"MATCH (p:CatalogProduct) WHERE p.name IN ['小米智能门铃','360智能门铃'] RETURN p.name AS name,p.price AS price ORDER BY p.name","source_files":["faq_service.txt"]},
+      "answer_facts": [{"id":"xiaomi","origin":"neo4j","any_of":["299"]},{"id":"360","origin":"neo4j","any_of":["199"]},{"id":"warranty","origin":"source","any_of":["1年质保"]},{"id":"water","origin":"source","any_of":["进水"]}]
+    },
+    {
+      "case_id": "M009", "category": "mixed",
+      "question": "目录里最便宜的智能门锁是哪款、多少钱？如果彻底没电，门外怎么处理？",
+      "expected_tools": ["cypher_query","microsoft_graphrag_query"],
+      "reference": {"cypher":"MATCH (p:CatalogProduct) WHERE p.category='智能门锁' RETURN p.name AS name,p.price AS price ORDER BY p.price LIMIT 1","source_files":["faq_service.txt"]},
+      "answer_facts": [{"id":"lock","origin":"neo4j","any_of":["小米智能门锁"]},{"id":"price","origin":"neo4j","any_of":["1299"]},{"id":"typec","origin":"source","any_of":["Type-C接口"]},{"id":"key","origin":"source","any_of":["机械钥匙"]}]
+    },
+    {
+      "case_id": "M010", "category": "mixed",
+      "question": "商品目录有几款智能门铃？用户体验材料里最常见的优点和改进建议是什么？",
+      "expected_tools": ["cypher_query","microsoft_graphrag_query"],
+      "reference": {"cypher":"MATCH (p:CatalogProduct) WHERE p.category='智能门铃' RETURN count(p) AS productCount","source_files":["user_experience.txt"]},
+      "answer_facts": [{"id":"count","origin":"neo4j","any_of":["4款","4 款","共4","共 4"]},{"id":"install","origin":"source","any_of":["安装简单"]},{"id":"night","origin":"source","any_of":["夜视效果好"]},{"id":"wifi","origin":"source","any_of":["WiFi连接稳定性"]}]
+    },
+
+    {
+      "case_id": "C001", "category": "comprehensive",
+      "question": "我在考虑小米智能门铃：请一次说明当前价格与库存、门铃保修规则，以及评价里提到的画质和联网问题。",
+      "expected_tools": ["cypher_query","microsoft_graphrag_query"],
+      "reference": {"cypher":"MATCH (p:CatalogProduct {name:'小米智能门铃'}) RETURN p.price AS price,p.stock AS stock","source_files":["faq_service.txt","user_reviews.txt"]},
+      "answer_facts": [{"id":"price","origin":"neo4j","any_of":["299"]},{"id":"stock","origin":"neo4j","any_of":["50"]},{"id":"warranty","origin":"source","any_of":["1年质保"]},{"id":"quality","origin":"source","any_of":["画质非常清晰"]},{"id":"wifi","origin":"source","any_of":["WiFi连接不太稳定"]}]
+    },
+    {
+      "case_id": "C002", "category": "comprehensive",
+      "question": "购买小爱音箱Pro前，我想知道价格库存、配网频段限制，以及真实评价中的强项和短板。",
+      "expected_tools": ["cypher_query","microsoft_graphrag_query"],
+      "reference": {"cypher":"MATCH (p:CatalogProduct {name:'小爱音箱Pro'}) RETURN p.price AS price,p.stock AS stock","source_files":["faq_service.txt","user_reviews.txt"]},
+      "answer_facts": [{"id":"price","origin":"neo4j","any_of":["399"]},{"id":"stock","origin":"neo4j","any_of":["120"]},{"id":"band","origin":"source","any_of":["2.4G WiFi"]},{"id":"sound","origin":"source","any_of":["音质非常出色"]},{"id":"complex","origin":"source","any_of":["复杂的指令有时候理解不了"]}]
+    },
+    {
+      "case_id": "C003", "category": "comprehensive",
+      "question": "请做一份小米智能门锁购买摘要：售价库存、质保期限、彻底没电的开门方式和用户反馈问题。",
+      "expected_tools": ["cypher_query","microsoft_graphrag_query"],
+      "reference": {"cypher":"MATCH (p:CatalogProduct {name:'小米智能门锁'}) RETURN p.price AS price,p.stock AS stock","source_files":["faq_service.txt","user_reviews.txt"]},
+      "answer_facts": [{"id":"price","origin":"neo4j","any_of":["1299"]},{"id":"stock","origin":"neo4j","any_of":["60"]},{"id":"warranty","origin":"source","any_of":["2年质保"]},{"id":"emergency","origin":"source","any_of":["Type-C接口"]},{"id":"app","origin":"source","any_of":["APP偶尔会连接不上门锁"]}]
+    },
+    {
+      "case_id": "C004", "category": "comprehensive",
+      "question": "列出400元以内的目录智能门铃及价格，再概括七天退货条件和门铃用户最希望改善的两点。",
+      "expected_tools": ["cypher_query","microsoft_graphrag_query"],
+      "reference": {"cypher":"MATCH (p:CatalogProduct) WHERE p.category='智能门铃' AND p.price <= 400 RETURN p.name AS name,p.price AS price ORDER BY p.price","source_files":["faq_service.txt","user_experience.txt"]},
+      "answer_facts": [{"id":"xiaomi","origin":"neo4j","any_of":["小米智能门铃"]},{"id":"return","origin":"source","any_of":["7天无理由"]},{"id":"unused","origin":"source","any_of":["商品未使用"]},{"id":"storage","origin":"source","any_of":["云存储功能"]},{"id":"wifi","origin":"source","any_of":["WiFi连接稳定性"]}]
+    },
+    {
+      "case_id": "C005", "category": "comprehensive",
+      "question": "目录中库存超过100且价格不高于400元的智能音箱有哪些？同时说明音箱质保和整体使用体验的优缺点。",
+      "expected_tools": ["cypher_query","microsoft_graphrag_query"],
+      "reference": {"cypher":"MATCH (p:CatalogProduct) WHERE p.category='智能音箱' AND p.stock > 100 AND p.price <= 400 RETURN p.name AS name,p.price AS price,p.stock AS stock ORDER BY p.price","source_files":["faq_service.txt","user_experience.txt"]},
+      "answer_facts": [{"id":"xiaodu","origin":"neo4j","any_of":["小度智能音箱"]},{"id":"tmall","origin":"neo4j","any_of":["天猫精灵X5"]},{"id":"xiaomi","origin":"neo4j","any_of":["小爱音箱Pro"]},{"id":"warranty","origin":"source","any_of":["1年质保"]},{"id":"sound","origin":"source","any_of":["音质表现优秀"]},{"id":"ads","origin":"source","any_of":["减少广告推送"]}]
+    }
+  ]
+}

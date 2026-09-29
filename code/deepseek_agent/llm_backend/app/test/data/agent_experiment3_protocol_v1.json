@@ -1,0 +1,125 @@
+{
+  "protocol": "agent-exp3-backend-v1",
+  "title": "项目内容3：全链路问答准确率与响应时间正式实验协议",
+  "status": "frozen_ready_for_formal_run",
+  "claim_under_test": {
+    "overall_qa_accuracy": 0.88,
+    "average_response_time_seconds": 3.5
+  },
+  "dataset": {
+    "file": "agent_experiment3_v1.json",
+    "cases": 50,
+    "repeats": 3,
+    "scored_requests": 150,
+    "held_out": true,
+    "no_post_run_tuning": true,
+    "distribution": {
+      "structured_predefined": 8,
+      "structured_dynamic": 12,
+      "graphrag": 15,
+      "mixed": 10,
+      "comprehensive": 5
+    }
+  },
+  "execution_boundary": [
+    "FastAPI experiment endpoint",
+    "outer Router",
+    "subgraph Guardrails",
+    "Planner",
+    "Tool Selection",
+    "Predefined_Cypher/Text2Cypher/GraphRAG",
+    "Summarize",
+    "Final Answer"
+  ],
+  "production_equivalence": {
+    "same_outer_graph_as_api_langgraph_query": true,
+    "same_nodes_and_prompts": true,
+    "same_neo4j": true,
+    "same_graphrag_index": true,
+    "experiment_endpoint_only_adds_trace_and_metadata": true,
+    "endpoint_default_enabled": false,
+    "endpoint_token_required": true
+  },
+  "frozen_runtime": {
+    "agent_temperature": 0.0,
+    "text2cypher_temperature": 0.0,
+    "graphrag_embedding": "local_hash_embedding/chinese-char-ngram-2-4-1024",
+    "graphrag_source_files": [
+      "faq_service.txt",
+      "user_experience.txt",
+      "user_reviews.txt"
+    ],
+    "text2cypher_max_correction_retries": 3,
+    "request_timeout_seconds": 90,
+    "concurrency": 1
+  },
+  "warmup": {
+    "enabled": true,
+    "scored": false,
+    "requests": 3,
+    "coverage": ["structured", "graphrag", "mixed"],
+    "cold_start_reported_separately": true
+  },
+  "metrics": {
+    "tool_selection_accuracy": {
+      "unit": "request",
+      "rule": "set(selected_tools) equals set(expected_tools); repeated calls of the same expected tool do not cause failure",
+      "role": "diagnostic"
+    },
+    "overall_qa_accuracy_request_level": {
+      "primary": true,
+      "denominator": 150,
+      "correct_when": [
+        "request completed without API or workflow error",
+        "outer Router entered graphrag-query",
+        "selected tool set is correct",
+        "every frozen answer fact is present in final user-facing answer"
+      ],
+      "target_minimum": 0.88,
+      "minimum_correct": 132
+    },
+    "overall_qa_accuracy_case_majority": {
+      "unit": "case",
+      "correct_when": "at least 2 of 3 repeats are request-level correct",
+      "target_minimum": 0.88,
+      "minimum_correct": 44
+    },
+    "latency": {
+      "scope": "FastAPI receipt through final answer of every scored request",
+      "primary": "arithmetic mean over 150 warmed scored requests",
+      "target_mean_ms_maximum": 3500,
+      "also_report": ["median_ms", "p95_ms", "maximum_ms", "per_category_mean_ms", "cold_warmup_ms"]
+    }
+  },
+  "answer_scoring": {
+    "judge": "deterministic frozen fact coverage; no LLM-as-judge",
+    "normalization": ["Unicode NFKC", "lowercase ASCII", "remove whitespace", "remove common punctuation"],
+    "fact_rule": "each answer_facts item passes if any one of its any_of strings occurs after normalization",
+    "case_rule": "all required facts must pass",
+    "structured_reference": "read-only Cypher executed and frozen during preflight",
+    "graphrag_reference": "must-have facts copied from frozen source files",
+    "mixed_reference": "all structured and source facts are required",
+    "manual_review": "may annotate ambiguous outputs but cannot convert a deterministic failure into a pass after seeing aggregate results"
+  },
+  "failure_policy": {
+    "http_error": "incorrect and included in latency if a measured response time exists",
+    "timeout": "incorrect; latency recorded as timeout ceiling",
+    "wrong_outer_route": "incorrect",
+    "missing_required_tool": "incorrect",
+    "unsafe_write": "abort experiment and invalidate run",
+    "dataset_or_schema_or_index_hash_change": "abort before next request",
+    "resume": "checkpoint resume allowed only when all frozen hashes and protocol version match"
+  },
+  "reporting": {
+    "raw_file": "agent_experiment3_backend_v1_raw.json",
+    "report_file": "agent_experiment3_backend_v1_report.md",
+    "preflight_manifest": "agent_experiment3_preflight_manifest_v1.json",
+    "retain_every_request_trace": true,
+    "report_both_success_and_failure_examples": true
+  },
+  "legacy_exclusion": {
+    "file": "run_text2cypher_experiments.py",
+    "reason": "its old experiment_3 measures Text2Cypher workflow success, not project-content-3 full-agent QA",
+    "eligible_for_statistics": false
+  }
+}

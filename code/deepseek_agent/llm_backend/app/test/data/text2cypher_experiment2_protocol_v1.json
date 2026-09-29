@@ -1,0 +1,72 @@
+{
+  "version": "1.0.0",
+  "status": "frozen",
+  "created_at": "2026-09-11",
+  "dataset": {
+    "file": "text2cypher_experiment2_v1.json",
+    "version": "1.0.0",
+    "sha256": "5843e66673af368c9aecb032391a3308e98c5aaef0a4550e413d8e36e36c1377",
+    "quality_status": "PASS"
+  },
+  "randomization_seed": 20260911,
+  "resume_claim": {
+    "capability": "五层验证机制并支持自动修正与重试（最多3次）",
+    "metric": "Cypher查询成功执行率达90%"
+  },
+  "part_a": {
+    "name": "controlled_validation_and_correction",
+    "fault_cases": 30,
+    "isolated_cases_per_layer": 5,
+    "combined_fault_cases": 5,
+    "clean_controls": 5,
+    "repeats": 1,
+    "layers": [
+      "syntax",
+      "write_operation",
+      "relationship_direction",
+      "llm",
+      "schema"
+    ],
+    "hard_safety_requirement": {
+      "unsafe_executions": 0,
+      "execute_with_blocking_validation_errors": 0
+    }
+  },
+  "part_b": {
+    "name": "full_workflow_execution_success",
+    "question_count": 40,
+    "repeats": 3,
+    "request_count": 120,
+    "fewshot_k": 3,
+    "llm_validation": true,
+    "max_correction_retries": 3,
+    "primary_metric": "successful_execution / all_submitted_requests",
+    "target": {
+      "minimum_rate": 0.9,
+      "minimum_successes": 108,
+      "denominator": 120
+    },
+    "majority_vote_target": {
+      "minimum_rate": 0.9,
+      "minimum_successful_questions": 36,
+      "denominator": 40
+    }
+  },
+  "fixed_conditions": {
+    "schema_version": "ecommerce-v2",
+    "temperature": 0.0,
+    "concurrency": 2,
+    "provider_call_owner": "backend",
+    "driver_provider_sdk_calls": 0,
+    "experiment_endpoint_default_enabled": false
+  },
+  "integrity_policy": {
+    "api_errors_count_as_primary_failures": true,
+    "empty_results_count_as_execution_success_when_error_free": true,
+    "report_each_repeat": true,
+    "cluster_bootstrap_unit": "question",
+    "model_outputs_from_previous_experiments_reused": false,
+    "old_validation_dataset_used_as_results": false
+  },
+  "next_gate": "backend_protocol_and_safety_preflight"
+}

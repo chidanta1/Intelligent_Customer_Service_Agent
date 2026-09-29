@@ -1,0 +1,67 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Runtime databases and state
+runtime_data/
+*.pid
+*.sock
+*.sock.lock
+*.db
+*.sqlite
+*.sqlite3
+
+# User uploads and generated results
+**/uploads/
+**/logs/
+**/app/test/results/
+**/graphrag/data/cache/
+**/graphrag/data/cache_*/
+**/graphrag/data/output/
+**/graphrag/data/output_*/
+**/graphrag/data/logs_*/
+**/graphrag/data/pdf_outputs/
+**/graphrag/data/pdf_csv_exports/
+**/graphrag/data/pdf_prompt_turn_output/
+**/graphrag/data/prompt_turn_output/
+**/graphrag/test_data/cache/
+**/graphrag/test_data/output/
+
+# Python caches and environments
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+
+# Build artifacts and editor files
+build/
+dist/
+*.egg-info/
+.idea/
+.vscode/
+.DS_Store
+*.swp
+*.swo
+
+# Logs
+*.log
+*.log.*
+
+# Local project notes and presentation documents
+/CLAUDE_DEEPSEEK_INTEGRATION_FINAL.md
+/MIGRATION_STATUS.md
+/README_CLAUDE_MIGRATION.md
+/README_RUNTIME.md
+/智能客服Agent代码解读.md
+/智能客服Agent代码解读.pdf
+/简历项目1：智能客服Agent.pdf

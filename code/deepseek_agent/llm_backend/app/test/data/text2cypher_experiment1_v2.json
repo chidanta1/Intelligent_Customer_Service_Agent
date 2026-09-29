@@ -1,0 +1,863 @@
+{
+  "dataset_name": "intelligent_customer_service_text2cypher_experiment1",
+  "version": "2.0.0",
+  "language": "zh-CN",
+  "split": "test_only",
+  "derived_from": {
+    "dataset": "text2cypher_benchmark_v1.json",
+    "version": "1.1.0",
+    "unchanged_question_ids": [
+      "T2C-G001",
+      "T2C-G002",
+      "T2C-G003",
+      "T2C-G004",
+      "T2C-G005",
+      "T2C-G006",
+      "T2C-G007",
+      "T2C-G008",
+      "T2C-G009",
+      "T2C-G010",
+      "T2C-G011",
+      "T2C-G012",
+      "T2C-G013",
+      "T2C-G014",
+      "T2C-G015",
+      "T2C-G016",
+      "T2C-G017",
+      "T2C-G018",
+      "T2C-G019",
+      "T2C-G020",
+      "T2C-G021",
+      "T2C-G022",
+      "T2C-G023",
+      "T2C-G024",
+      "T2C-G025",
+      "T2C-G026",
+      "T2C-G027",
+      "T2C-G028",
+      "T2C-G029",
+      "T2C-G030",
+      "T2C-G031",
+      "T2C-G032",
+      "T2C-G033",
+      "T2C-G034",
+      "T2C-G035",
+      "T2C-G036",
+      "T2C-G037",
+      "T2C-G038",
+      "T2C-G039",
+      "T2C-G040"
+    ]
+  },
+  "database_snapshot": "local_neo4j_ecommerce_v2_2026-09-10",
+  "schema_version": "ecommerce-v2",
+  "evaluation_policy": {
+    "generation_match": "required_reference_projection_equivalence",
+    "ordered_only_when_question_requires_order": true,
+    "fewshot_isolation": "never_ingest_this_dataset",
+    "fewshot_k_control": [
+      0,
+      3
+    ],
+    "max_correction_retries": 3,
+    "target_metric_counts_on_40_cases": {
+      "65_percent": 26,
+      "85_percent": 34,
+      "90_percent": 36
+    }
+  },
+  "schema_scope": {
+    "labels": [
+      "CatalogProduct",
+      "CatalogReview",
+      "Category",
+      "Customer",
+      "Employee",
+      "GraphProduct",
+      "GraphReview",
+      "Order",
+      "Shipper",
+      "Supplier"
+    ],
+    "relationships": [
+      "ABOUT",
+      "BELONGS_TO",
+      "CONTAINS",
+      "PLACED",
+      "PROCESSED",
+      "SHIPPED_VIA",
+      "SUPPLIED_BY",
+      "WROTE"
+    ],
+    "canonical_only": true
+  },
+  "generation_cases": [
+    {
+      "id": "T2C-G001",
+      "question": "华为Sound X现在卖多少钱，还有多少库存？",
+      "reference_cypher": "MATCH (p:CatalogProduct) WHERE p.name = '华为Sound X' RETURN p.price AS price, p.stock AS stock",
+      "difficulty": "easy",
+      "domain": "app_catalog",
+      "query_type": "entity_lookup",
+      "expected_non_empty": true,
+      "expected_columns": [
+        "price",
+        "stock"
+      ],
+      "ordered": false,
+      "tags": [
+        "Product",
+        "filter"
+      ]
+    },
+    {
+      "id": "T2C-G002",
+      "question": "把小米品牌的商品名称、价格和库存列出来。",
+      "reference_cypher": "MATCH (p:CatalogProduct) WHERE p.brand = '小米' RETURN p.name AS product, p.price AS price, p.stock AS stock ORDER BY product",
+      "difficulty": "easy",
+      "domain": "app_catalog",
+      "query_type": "filter",
+      "expected_non_empty": true,
+      "expected_columns": [
+        "product",
+        "price",
+        "stock"
+      ],
+      "ordered": false,
+      "tags": [
+        "Product",
+        "brand"
+      ]
+    },
+    {
+      "id": "T2C-G003",
+      "question": "有哪些应用商品的价格在200元到1000元之间？",
+      "reference_cypher": "MATCH (p:CatalogProduct) WHERE p.price >= 200 AND p.price <= 1000 RETURN p.name AS product, p.price AS price ORDER BY price, product",
+      "difficulty": "easy",
+      "domain": "app_catalog",
+      "query_type": "range_filter",
+      "expected_non_empty": true,
+      "expected_columns": [
+        "product",
+        "price"
+      ],
+      "ordered": false,
+      "tags": [
+        "Product",
+        "price"
+      ]
+    },
+    {
+      "id": "T2C-G004",
+      "question": "查一下库存不超过35件的应用商品。",
+      "reference_cypher": "MATCH (p:CatalogProduct) WHERE p.stock <= 35 RETURN p.name AS product, p.stock AS stock ORDER BY stock, product",
+      "difficulty": "easy",
+      "domain": "app_catalog",
+      "query_type": "range_filter",
+      "expected_non_empty": true,
+      "expected_columns": [
+        "product",
+        "stock"
+      ],
+      "ordered": false,
+      "tags": [
+        "Product",
+        "stock"
+      ]
+    },
+    {
+      "id": "T2C-G005",
+      "question": "博世智能冰箱Lite的图谱商品单价和库存分别是多少？",
+      "reference_cypher": "MATCH (p:GraphProduct) WHERE p.name = '博世 智能冰箱 Lite' RETURN toFloat(p.price) AS unit_price, toInteger(p.stock) AS stock",
+      "difficulty": "easy",
+      "domain": "legacy_graph",
+      "query_type": "entity_lookup",
+      "expected_non_empty": true,
+      "expected_columns": [
+        "unit_price",
+        "stock"
+      ],
+      "ordered": false,
+      "tags": [
+        "Product",
+        "filter"
+      ]
+    },
+    {
+      "id": "T2C-G006",
+      "question": "按名称列出系统里的全部商品类别。",
+      "reference_cypher": "MATCH (c:Category) RETURN c.name AS category ORDER BY category",
+      "difficulty": "easy",
+      "domain": "legacy_graph",
+      "query_type": "list",
+      "expected_non_empty": true,
+      "expected_columns": [
+        "category"
+      ],
+      "ordered": true,
+      "tags": [
+        "Category"
+      ]
+    },
+    {
+      "id": "T2C-G007",
+      "question": "中国供应商中哪些联系人的职位是销售经理？",
+      "reference_cypher": "MATCH (s:Supplier) WHERE s.country = '中国' AND s.contactTitle = '销售经理' RETURN s.name AS supplier, s.contactName AS contact ORDER BY supplier",
+      "difficulty": "easy",
+      "domain": "legacy_graph",
+      "query_type": "filter",
+      "expected_non_empty": true,
+      "expected_columns": [
+        "supplier",
+        "contact"
+      ],
+      "ordered": false,
+      "tags": [
+        "Supplier"
+      ]
+    },
+    {
+      "id": "T2C-G008",
+      "question": "列出新疆维吾尔自治区客户的公司名称和所在城市。",
+      "reference_cypher": "MATCH (c:Customer) WHERE c.region = '新疆维吾尔自治区' RETURN c.name AS customer, c.city AS city ORDER BY customer",
+      "difficulty": "easy",
+      "domain": "legacy_graph",
+      "query_type": "filter",
+      "expected_non_empty": true,
+      "expected_columns": [
+        "customer",
+        "city"
+      ],
+      "ordered": false,
+      "tags": [
+        "Customer"
+      ]
+    },
+    {
+      "id": "T2C-G009",
+      "question": "2020年以后入职的员工是谁，担任什么职位？",
+      "reference_cypher": "MATCH (e:Employee) WHERE e.hireDate >= date('2020-01-01') RETURN e.lastName + e.firstName AS employee, e.title AS title ORDER BY employee",
+      "difficulty": "easy",
+      "domain": "legacy_graph",
+      "query_type": "temporal_filter",
+      "expected_non_empty": true,
+      "expected_columns": [
+        "employee",
+        "title"
+      ],
+      "ordered": false,
+      "tags": [
+        "Employee",
+        "date"
+      ]
+    },
+    {
+      "id": "T2C-G010",
+      "question": "德邦物流的联系电话是什么？",
+      "reference_cypher": "MATCH (s:Shipper) WHERE s.name = '德邦物流' RETURN s.phone AS phone",
+      "difficulty": "easy",
+      "domain": "legacy_graph",
+      "query_type": "entity_lookup",
+      "expected_non_empty": true,
+      "expected_columns": [
+        "phone"
+      ],
+      "ordered": false,
+      "tags": [
+        "Shipper"
+      ]
+    },
+    {
+      "id": "T2C-G011",
+      "question": "查询79号订单的下单日期、收货城市和运费。",
+      "reference_cypher": "MATCH (o:Order) WHERE o.orderId = '79' RETURN o.orderDate AS order_date, o.shipCity AS city, toFloat(o.freight) AS freight",
+      "difficulty": "easy",
+      "domain": "legacy_graph",
+      "query_type": "entity_lookup",
+      "expected_non_empty": true,
+      "expected_columns": [
+        "order_date",
+        "city",
+        "freight"
+      ],
+      "ordered": false,
+      "tags": [
+        "Order"
+      ]
+    },
+    {
+      "id": "T2C-G012",
+      "question": "应用商品评价里有哪些五星评价？返回商品名和评价内容。",
+      "reference_cypher": "MATCH (r:CatalogReview)-[:ABOUT]->(p:CatalogProduct) WHERE r.rating = 5 RETURN p.name AS product, r.content AS review ORDER BY product",
+      "difficulty": "easy",
+      "domain": "app_catalog",
+      "query_type": "filter",
+      "expected_non_empty": true,
+      "expected_columns": [
+        "product",
+        "review"
+      ],
+      "ordered": false,
+      "tags": [
+        "Review",
+        "ABOUT",
+        "Product"
+      ]
+    },
+    {
+      "id": "T2C-G013",
+      "question": "应用商品中价格最高的前5款是什么？",
+      "reference_cypher": "MATCH (p:CatalogProduct) WHERE p.price IS NOT NULL RETURN p.name AS product, p.price AS price ORDER BY price DESC, product LIMIT 5",
+      "difficulty": "medium",
+      "domain": "app_catalog",
+      "query_type": "ranking",
+      "expected_non_empty": true,
+      "expected_columns": [
+        "product",
+        "price"
+      ],
+      "ordered": true,
+      "tags": [
+        "Product",
+        "top_k"
+      ]
+    },
+    {
+      "id": "T2C-G014",
+      "question": "统计每个品牌应用商品的平均售价和商品数。",
+      "reference_cypher": "MATCH (p:CatalogProduct) WHERE p.brand IS NOT NULL RETURN p.brand AS brand, round(avg(p.price), 2) AS avg_price, count(p) AS product_count ORDER BY brand",
+      "difficulty": "medium",
+      "domain": "app_catalog",
+      "query_type": "aggregation",
+      "expected_non_empty": true,
+      "expected_columns": [
+        "brand",
+        "avg_price",
+        "product_count"
+      ],
+      "ordered": false,
+      "tags": [
+        "Product",
+        "aggregation"
+      ]
+    },
+    {
+      "id": "T2C-G015",
+      "question": "应用商品按category字段分组后，各类别有多少款？",
+      "reference_cypher": "MATCH (p:CatalogProduct) WHERE p.category IS NOT NULL RETURN p.category AS category, count(p) AS product_count ORDER BY product_count DESC, category",
+      "difficulty": "medium",
+      "domain": "app_catalog",
+      "query_type": "aggregation",
+      "expected_non_empty": true,
+      "expected_columns": [
+        "category",
+        "product_count"
+      ],
+      "ordered": false,
+      "tags": [
+        "Product",
+        "aggregation"
+      ]
+    },
+    {
+      "id": "T2C-G016",
+      "question": "图关系中属于智能开关类别的商品有哪些，单价多少？",
+      "reference_cypher": "MATCH (p:GraphProduct)-[:BELONGS_TO]->(c:Category) WHERE c.name = '智能开关' RETURN p.name AS product, toFloat(p.price) AS unit_price ORDER BY unit_price DESC",
+      "difficulty": "medium",
+      "domain": "legacy_graph",
+      "query_type": "one_hop",
+      "expected_non_empty": true,
+      "expected_columns": [
+        "product",
+        "unit_price"
+      ],
+      "ordered": false,
+      "tags": [
+        "Product",
+        "BELONGS_TO",
+        "Category"
+      ]
+    },
+    {
+      "id": "T2C-G017",
+      "question": "苹果智能家庭供应了哪些图谱商品？",
+      "reference_cypher": "MATCH (p:GraphProduct)-[:SUPPLIED_BY]->(s:Supplier) WHERE s.name = '苹果智能家庭' RETURN p.name AS product ORDER BY product",
+      "difficulty": "medium",
+      "domain": "legacy_graph",
+      "query_type": "one_hop",
+      "expected_non_empty": true,
+      "expected_columns": [
+        "product"
+      ],
+      "ordered": false,
+      "tags": [
+        "Product",
+        "SUPPLIED_BY",
+        "Supplier"
+      ]
+    },
+    {
+      "id": "T2C-G018",
+      "question": "找出下单数至少6单的客户，并按订单数降序排列。",
+      "reference_cypher": "MATCH (c:Customer)-[:PLACED]->(o:Order) WITH c, count(o) AS order_count WHERE order_count >= 6 RETURN c.name AS customer, order_count ORDER BY order_count DESC, customer",
+      "difficulty": "medium",
+      "domain": "legacy_graph",
+      "query_type": "aggregation_filter",
+      "expected_non_empty": true,
+      "expected_columns": [
+        "customer",
+        "order_count"
+      ],
+      "ordered": true,
+      "tags": [
+        "Customer",
+        "PLACED",
+        "Order"
+      ]
+    },
+    {
+      "id": "T2C-G019",
+      "question": "每位员工处理了多少订单？",
+      "reference_cypher": "MATCH (e:Employee)-[:PROCESSED]->(o:Order) RETURN e.lastName + e.firstName AS employee, count(o) AS order_count ORDER BY order_count DESC, employee",
+      "difficulty": "medium",
+      "domain": "legacy_graph",
+      "query_type": "aggregation",
+      "expected_non_empty": true,
+      "expected_columns": [
+        "employee",
+        "order_count"
+      ],
+      "ordered": false,
+      "tags": [
+        "Employee",
+        "PROCESSED",
+        "Order"
+      ]
+    },
+    {
+      "id": "T2C-G020",
+      "question": "按物流公司汇总配送订单数量。",
+      "reference_cypher": "MATCH (o:Order)-[:SHIPPED_VIA]->(s:Shipper) RETURN s.name AS shipper, count(o) AS order_count ORDER BY order_count DESC, shipper",
+      "difficulty": "medium",
+      "domain": "legacy_graph",
+      "query_type": "aggregation",
+      "expected_non_empty": true,
+      "expected_columns": [
+        "shipper",
+        "order_count"
+      ],
+      "ordered": false,
+      "tags": [
+        "Order",
+        "SHIPPED_VIA",
+        "Shipper"
+      ]
+    },
+    {
+      "id": "T2C-G021",
+      "question": "哪些已发货订单是在要求日期之前发出的？",
+      "reference_cypher": "MATCH (o:Order) WHERE o.shippedDate IS NOT NULL AND o.shippedDate < o.requiredDate RETURN o.orderId AS order_id ORDER BY o.shippedDate LIMIT 20",
+      "difficulty": "medium",
+      "domain": "legacy_graph",
+      "query_type": "temporal_filter",
+      "expected_non_empty": true,
+      "expected_columns": [
+        "order_id"
+      ],
+      "ordered": false,
+      "tags": [
+        "Order",
+        "date"
+      ]
+    },
+    {
+      "id": "T2C-G022",
+      "question": "列出尚未发货的订单编号和客户名称。",
+      "reference_cypher": "MATCH (o:Order) WHERE o.shippedDate IS NULL RETURN o.orderId AS order_id, o.customerName AS customer ORDER BY toInteger(order_id)",
+      "difficulty": "medium",
+      "domain": "legacy_graph",
+      "query_type": "null_filter",
+      "expected_non_empty": true,
+      "expected_columns": [
+        "order_id",
+        "customer"
+      ],
+      "ordered": false,
+      "tags": [
+        "Order",
+        "null"
+      ]
+    },
+    {
+      "id": "T2C-G023",
+      "question": "按月份统计订单量，并按月份排序。",
+      "reference_cypher": "MATCH (o:Order) WITH date.truncate('month', o.orderDate) AS month, count(o) AS order_count RETURN month, order_count ORDER BY month",
+      "difficulty": "medium",
+      "domain": "legacy_graph",
+      "query_type": "temporal_aggregation",
+      "expected_non_empty": true,
+      "expected_columns": [
+        "month",
+        "order_count"
+      ],
+      "ordered": true,
+      "tags": [
+        "Order",
+        "date",
+        "aggregation"
+      ]
+    },
+    {
+      "id": "T2C-G024",
+      "question": "客户写下的图谱评价中，每款商品的平均评分是多少？至少要有2条评价。",
+      "reference_cypher": "MATCH (:Customer)-[:WROTE]->(r:GraphReview)-[:ABOUT]->(p:GraphProduct) WHERE r.rating IS NOT NULL WITH p, avg(toFloat(r.rating)) AS avg_rating, count(r) AS review_count WHERE review_count >= 2 RETURN p.name AS product, round(avg_rating, 2) AS avg_rating ORDER BY avg_rating DESC, product",
+      "difficulty": "medium",
+      "domain": "legacy_graph",
+      "query_type": "multi_hop_aggregation_filter",
+      "expected_non_empty": true,
+      "expected_columns": [
+        "product",
+        "avg_rating"
+      ],
+      "ordered": false,
+      "tags": [
+        "Customer",
+        "WROTE",
+        "Review",
+        "ABOUT",
+        "Product"
+      ]
+    },
+    {
+      "id": "T2C-G025",
+      "question": "应用评价中各商品的平均星级和评价数是多少？",
+      "reference_cypher": "MATCH (r:CatalogReview)-[:ABOUT]->(p:CatalogProduct) WHERE r.rating IS NOT NULL RETURN p.name AS product, round(avg(r.rating), 2) AS avg_rating, count(r) AS review_count ORDER BY avg_rating DESC, product",
+      "difficulty": "medium",
+      "domain": "app_catalog",
+      "query_type": "aggregation",
+      "expected_non_empty": true,
+      "expected_columns": [
+        "product",
+        "avg_rating",
+        "review_count"
+      ],
+      "ordered": false,
+      "tags": [
+        "Review",
+        "ABOUT",
+        "Product"
+      ]
+    },
+    {
+      "id": "T2C-G026",
+      "question": "最有帮助的5条应用评价分别属于什么商品？",
+      "reference_cypher": "MATCH (r:CatalogReview)-[:ABOUT]->(p:CatalogProduct) WHERE r.helpfulCount IS NOT NULL RETURN p.name AS product, r.helpfulCount AS helpful_count, r.content AS review ORDER BY helpful_count DESC LIMIT 5",
+      "difficulty": "medium",
+      "domain": "app_catalog",
+      "query_type": "ranking",
+      "expected_non_empty": true,
+      "expected_columns": [
+        "product",
+        "helpful_count",
+        "review"
+      ],
+      "ordered": true,
+      "tags": [
+        "Review",
+        "ABOUT",
+        "Product",
+        "top_k"
+      ]
+    },
+    {
+      "id": "T2C-G027",
+      "question": "按收货城市统计订单数量，取前10个城市。",
+      "reference_cypher": "MATCH (o:Order) RETURN o.shipCity AS city, count(o) AS order_count ORDER BY order_count DESC, city LIMIT 10",
+      "difficulty": "medium",
+      "domain": "legacy_graph",
+      "query_type": "aggregation_ranking",
+      "expected_non_empty": true,
+      "expected_columns": [
+        "city",
+        "order_count"
+      ],
+      "ordered": true,
+      "tags": [
+        "Order",
+        "aggregation"
+      ]
+    },
+    {
+      "id": "T2C-G028",
+      "question": "运费最高的5个订单是哪几个？",
+      "reference_cypher": "MATCH (o:Order) RETURN o.orderId AS order_id, toFloat(o.freight) AS freight ORDER BY freight DESC LIMIT 5",
+      "difficulty": "medium",
+      "domain": "legacy_graph",
+      "query_type": "ranking",
+      "expected_non_empty": true,
+      "expected_columns": [
+        "order_id",
+        "freight"
+      ],
+      "ordered": true,
+      "tags": [
+        "Order",
+        "top_k"
+      ]
+    },
+    {
+      "id": "T2C-G029",
+      "question": "哪些客户目前一笔订单都没有？",
+      "reference_cypher": "MATCH (c:Customer) WHERE NOT (c)-[:PLACED]->(:Order) RETURN c.name AS customer ORDER BY customer",
+      "difficulty": "medium",
+      "domain": "legacy_graph",
+      "query_type": "negative_pattern",
+      "expected_non_empty": true,
+      "expected_columns": [
+        "customer"
+      ],
+      "ordered": false,
+      "tags": [
+        "Customer",
+        "PLACED",
+        "Order"
+      ]
+    },
+    {
+      "id": "T2C-G030",
+      "question": "哪些类别在图关系里还没有关联任何商品？",
+      "reference_cypher": "MATCH (c:Category) WHERE NOT (:GraphProduct)-[:BELONGS_TO]->(c) RETURN c.name AS category ORDER BY category",
+      "difficulty": "medium",
+      "domain": "legacy_graph",
+      "query_type": "negative_pattern",
+      "expected_non_empty": true,
+      "expected_columns": [
+        "category"
+      ],
+      "ordered": false,
+      "tags": [
+        "Category",
+        "BELONGS_TO",
+        "Product"
+      ]
+    },
+    {
+      "id": "T2C-G031",
+      "question": "按照订单明细计算每款图谱商品的销售额，返回前5名。",
+      "reference_cypher": "MATCH (:Order)-[line:CONTAINS]->(p:GraphProduct) WITH p, sum(toFloat(line.unitPrice) * toInteger(line.quantity) * (1 - toFloat(line.discount))) AS revenue RETURN p.name AS product, round(revenue, 2) AS revenue ORDER BY revenue DESC LIMIT 5",
+      "difficulty": "hard",
+      "domain": "legacy_graph",
+      "query_type": "multi_hop_aggregation",
+      "expected_non_empty": true,
+      "expected_columns": [
+        "product",
+        "revenue"
+      ],
+      "ordered": true,
+      "tags": [
+        "Order",
+        "CONTAINS",
+        "Product",
+        "sales"
+      ]
+    },
+    {
+      "id": "T2C-G032",
+      "question": "各图谱商品类别的销售额分别是多少？",
+      "reference_cypher": "MATCH (:Order)-[line:CONTAINS]->(p:GraphProduct)-[:BELONGS_TO]->(c:Category) RETURN c.name AS category, round(sum(toFloat(line.unitPrice) * toInteger(line.quantity) * (1 - toFloat(line.discount))), 2) AS revenue ORDER BY revenue DESC, category",
+      "difficulty": "hard",
+      "domain": "legacy_graph",
+      "query_type": "multi_hop_aggregation",
+      "expected_non_empty": true,
+      "expected_columns": [
+        "category",
+        "revenue"
+      ],
+      "ordered": false,
+      "tags": [
+        "Order",
+        "CONTAINS",
+        "Product",
+        "BELONGS_TO",
+        "Category",
+        "sales"
+      ]
+    },
+    {
+      "id": "T2C-G033",
+      "question": "计算每位客户的累计消费金额，列出最高的5位。",
+      "reference_cypher": "MATCH (c:Customer)-[:PLACED]->(:Order)-[line:CONTAINS]->(:GraphProduct) RETURN c.name AS customer, round(sum(toFloat(line.unitPrice) * toInteger(line.quantity) * (1 - toFloat(line.discount))), 2) AS spend ORDER BY spend DESC LIMIT 5",
+      "difficulty": "hard",
+      "domain": "legacy_graph",
+      "query_type": "multi_hop_aggregation",
+      "expected_non_empty": true,
+      "expected_columns": [
+        "customer",
+        "spend"
+      ],
+      "ordered": true,
+      "tags": [
+        "Customer",
+        "PLACED",
+        "Order",
+        "CONTAINS",
+        "sales"
+      ]
+    },
+    {
+      "id": "T2C-G034",
+      "question": "按供应商统计其商品带来的销售收入。",
+      "reference_cypher": "MATCH (:Order)-[line:CONTAINS]->(p:GraphProduct)-[:SUPPLIED_BY]->(s:Supplier) RETURN s.name AS supplier, round(sum(toFloat(line.unitPrice) * toInteger(line.quantity) * (1 - toFloat(line.discount))), 2) AS revenue ORDER BY revenue DESC, supplier",
+      "difficulty": "hard",
+      "domain": "legacy_graph",
+      "query_type": "multi_hop_aggregation",
+      "expected_non_empty": true,
+      "expected_columns": [
+        "supplier",
+        "revenue"
+      ],
+      "ordered": false,
+      "tags": [
+        "Order",
+        "CONTAINS",
+        "Product",
+        "SUPPLIED_BY",
+        "Supplier",
+        "sales"
+      ]
+    },
+    {
+      "id": "T2C-G035",
+      "question": "每位员工处理订单的销售额和订单数是多少？",
+      "reference_cypher": "MATCH (e:Employee)-[:PROCESSED]->(o:Order)-[line:CONTAINS]->(:GraphProduct) RETURN e.lastName + e.firstName AS employee, count(DISTINCT o) AS order_count, round(sum(toFloat(line.unitPrice) * toInteger(line.quantity) * (1 - toFloat(line.discount))), 2) AS revenue ORDER BY revenue DESC",
+      "difficulty": "hard",
+      "domain": "legacy_graph",
+      "query_type": "multi_hop_aggregation",
+      "expected_non_empty": true,
+      "expected_columns": [
+        "employee",
+        "order_count",
+        "revenue"
+      ],
+      "ordered": false,
+      "tags": [
+        "Employee",
+        "PROCESSED",
+        "Order",
+        "CONTAINS",
+        "sales"
+      ]
+    },
+    {
+      "id": "T2C-G036",
+      "question": "哪些图谱商品经常出现在同一订单中？列出共同出现次数最多的5对。",
+      "reference_cypher": "MATCH (o:Order)-[:CONTAINS]->(p1:GraphProduct), (o)-[:CONTAINS]->(p2:GraphProduct) WHERE p1.productId < p2.productId RETURN p1.name AS product_1, p2.name AS product_2, count(DISTINCT o) AS together_count ORDER BY together_count DESC, product_1, product_2 LIMIT 5",
+      "difficulty": "hard",
+      "domain": "legacy_graph",
+      "query_type": "self_join_aggregation",
+      "expected_non_empty": true,
+      "expected_columns": [
+        "product_1",
+        "product_2",
+        "together_count"
+      ],
+      "ordered": true,
+      "tags": [
+        "Order",
+        "CONTAINS",
+        "Product",
+        "pair"
+      ]
+    },
+    {
+      "id": "T2C-G037",
+      "question": "购买过华为智能生活所供商品的客户有哪些？",
+      "reference_cypher": "MATCH (c:Customer)-[:PLACED]->(:Order)-[:CONTAINS]->(p:GraphProduct)-[:SUPPLIED_BY]->(s:Supplier) WHERE s.name = '华为智能生活' RETURN DISTINCT c.name AS customer ORDER BY customer",
+      "difficulty": "hard",
+      "domain": "legacy_graph",
+      "query_type": "four_hop_filter",
+      "expected_non_empty": true,
+      "expected_columns": [
+        "customer"
+      ],
+      "ordered": false,
+      "tags": [
+        "Customer",
+        "PLACED",
+        "Order",
+        "CONTAINS",
+        "Product",
+        "SUPPLIED_BY",
+        "Supplier"
+      ]
+    },
+    {
+      "id": "T2C-G038",
+      "question": "每位客户在各商品类别上的消费金额是多少？返回金额最高的10项。",
+      "reference_cypher": "MATCH (customer:Customer)-[:PLACED]->(:Order)-[line:CONTAINS]->(p:GraphProduct)-[:BELONGS_TO]->(category:Category) RETURN customer.name AS customer, category.name AS category, round(sum(toFloat(line.unitPrice) * toInteger(line.quantity) * (1 - toFloat(line.discount))), 2) AS spend ORDER BY spend DESC LIMIT 10",
+      "difficulty": "hard",
+      "domain": "legacy_graph",
+      "query_type": "four_hop_aggregation",
+      "expected_non_empty": true,
+      "expected_columns": [
+        "customer",
+        "category",
+        "spend"
+      ],
+      "ordered": true,
+      "tags": [
+        "Customer",
+        "PLACED",
+        "Order",
+        "CONTAINS",
+        "Product",
+        "BELONGS_TO",
+        "Category",
+        "sales"
+      ]
+    },
+    {
+      "id": "T2C-G039",
+      "question": "按下单月份汇总销售收入。",
+      "reference_cypher": "MATCH (o:Order)-[line:CONTAINS]->(:GraphProduct) WITH date.truncate('month', o.orderDate) AS month, sum(toFloat(line.unitPrice) * toInteger(line.quantity) * (1 - toFloat(line.discount))) AS revenue RETURN month, round(revenue, 2) AS revenue ORDER BY month",
+      "difficulty": "hard",
+      "domain": "legacy_graph",
+      "query_type": "temporal_multi_hop_aggregation",
+      "expected_non_empty": true,
+      "expected_columns": [
+        "month",
+        "revenue"
+      ],
+      "ordered": false,
+      "tags": [
+        "Order",
+        "CONTAINS",
+        "date",
+        "sales"
+      ]
+    },
+    {
+      "id": "T2C-G040",
+      "question": "购买商品类别最丰富的前5位客户是谁？",
+      "reference_cypher": "MATCH (c:Customer)-[:PLACED]->(:Order)-[:CONTAINS]->(p:GraphProduct)-[:BELONGS_TO]->(category:Category) RETURN c.name AS customer, count(DISTINCT category) AS category_count ORDER BY category_count DESC, customer LIMIT 5",
+      "difficulty": "hard",
+      "domain": "legacy_graph",
+      "query_type": "four_hop_distinct_aggregation",
+      "expected_non_empty": true,
+      "expected_columns": [
+        "customer",
+        "category_count"
+      ],
+      "ordered": true,
+      "tags": [
+        "Customer",
+        "PLACED",
+        "Order",
+        "CONTAINS",
+        "Product",
+        "BELONGS_TO",
+        "Category"
+      ]
+    }
+  ]
+}
